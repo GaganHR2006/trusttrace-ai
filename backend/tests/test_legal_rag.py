@@ -2,7 +2,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from backend.app.legal_rag import index_passages, list_legal_sources, search_legal_sources, split_provisions
+from backend.app.legal_rag import index_passages, list_legal_sources, search_legal_sources, split_provisions, verify_legal_reference
 
 
 class LegalProvisionSplitTests(unittest.TestCase):
@@ -54,7 +54,7 @@ class LegalRetrievalTests(unittest.TestCase):
             "source_url": "https://www.meity.gov.in/static/uploads/2024/06/2bf1f0e9f04e6fb4f8fef35e82c42aa5.pdf",
             "issuer": "Ministry of Law and Justice, Legislative Department; hosted by MeitY",
             "instrument_number": "Act No. 22 of 2023", "published_date": "2023-08-11",
-            "version": "Official Gazette text as enacted", "sha256": "",
+            "version": "Official Gazette text as enacted", "sha256": "a" * 64,
             "effective_date": "Provision-specific; see G.S.R. 843(E)",
             "provision_id": "section_6", "heading": "Section 6", "text": self.source_text,
         }]
@@ -72,6 +72,19 @@ class LegalRetrievalTests(unittest.TestCase):
         self.assertEqual(citation["provision_id"], "section_6")
         self.assertEqual(passage[citation["start"]:citation["end"]], citation["quote"])
         self.assertEqual(citation["quote"], self.source_text)
+        self.assertEqual(citation["passage_id"], self.passages[0]["passage_id"])
+        self.assertEqual(len(citation["corpus_version"]), 64)
+        self.assertEqual(verify_legal_reference(citation, self.db), citation)
+
+    def test_citation_verification_rejects_fabricated_mismatched_and_stale_references(self):
+        citation = search_legal_sources("consent clear affirmative action", path=self.db)["results"][0]["citation"]
+        for key, value in (("passage_id", "fabricated"), ("quote", "changed quote"), ("start", 1), ("end", len(self.source_text) - 1), ("source_url", "https://evil.example/"), ("sha256", "b" * 64), ("corpus_version", "0" * 64)):
+            altered = {**citation, key: value}
+            with self.subTest(key=key):
+                self.assertIsNone(verify_legal_reference(altered, self.db))
+        changed = [{**self.passages[0], "text": self.source_text + " changed"}]
+        index_passages(changed, self.db)
+        self.assertIsNone(verify_legal_reference(citation, self.db))
 
     def test_unsupported_question_returns_explicit_insufficient_evidence(self):
         result = search_legal_sources("quantum banana teleportation", path=self.db)

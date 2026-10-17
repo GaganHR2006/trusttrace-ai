@@ -7,6 +7,7 @@ retriever only: it does not interpret law, decide compliance, or call an LLM.
 from __future__ import annotations
 
 import json
+import hashlib
 import math
 import re
 import sqlite3
@@ -176,6 +177,7 @@ def search_legal_sources(query: str, limit: int = 5, path: Path = INDEX_PATH) ->
         rows = connection.execute("SELECT * FROM passages").fetchall()
     finally:
         connection.close()
+    corpus_version = _corpus_version(rows)
     ranked: list[tuple[float, sqlite3.Row]] = []
     for row in rows:
         stored = json.loads(row["token_counts"])["vector"]
@@ -190,6 +192,7 @@ def search_legal_sources(query: str, limit: int = 5, path: Path = INDEX_PATH) ->
             "score": round(score, 6),
             "passage": text,
             "citation": {
+                "passage_id": row["passage_id"], "corpus_version": corpus_version,
                 "source_id": row["source_id"], "title": row["title"], "source_url": row["source_url"],
                 "issuer": row["issuer"], "instrument_number": row["instrument_number"],
                 "published_date": row["published_date"], "version": row["version"],
@@ -206,3 +209,65 @@ def search_legal_sources(query: str, limit: int = 5, path: Path = INDEX_PATH) ->
         "results": results,
         "message": "Retrieved source passages are evidence for research only; no legal conclusion is generated." if results else "No matching source passage was found in the indexed corpus.",
     }
+
+
+def _corpus_version(rows: list[sqlite3.Row]) -> str:
+    """Fingerprint the indexed source records so references stale on rebuild."""
+    digest = hashlib.sha256()
+    for row in sorted(rows, key=lambda item: item["passage_id"]):
+        record = [row[key] for key in (
+            "passage_id", "source_id", "title", "source_url", "issuer", "instrument_number",
+            "published_date", "version", "sha256", "effective_date", "provision_id", "heading", "text",
+        )]
+        digest.update(json.dumps(record, ensure_ascii=False, separators=(",", ":")).encode("utf-8"))
+        digest.update(b"\n")
+    return digest.hexdigest()
+
+
+def current_corpus_version(path: Path = INDEX_PATH) -> str:
+    """Return the deterministic version of the current local passage corpus."""
+    if not path.is_file():
+        raise FileNotFoundError(path)
+    connection = sqlite3.connect(path)
+    connection.row_factory = sqlite3.Row
+    try:
+        rows = connection.execute("SELECT * FROM passages").fetchall()
+    except sqlite3.OperationalError:
+        raise FileNotFoundError(path) from None
+    finally:
+        connection.close()
+    if not rows:
+        raise FileNotFoundError(path)
+    return _corpus_version(rows)
+
+
+def verify_legal_reference(reference: dict[str, Any], path: Path = INDEX_PATH) -> dict[str, Any] | None:
+    """Resolve and verify a client citation against the current indexed row."""
+    if not path.is_file():
+        raise FileNotFoundError(path)
+    connection = sqlite3.connect(path)
+    connection.row_factory = sqlite3.Row
+    try:
+        rows = connection.execute("SELECT * FROM passages").fetchall()
+    except sqlite3.OperationalError:
+        raise FileNotFoundError(path) from None
+    finally:
+        connection.close()
+    if not rows:
+        raise FileNotFoundError(path)
+    version = _corpus_version(rows)
+    passage_id = reference.get("passage_id")
+    row = next((item for item in rows if item["passage_id"] == passage_id), None)
+    if row is None:
+        return None
+    text = row["text"]
+    expected = {
+        "passage_id": row["passage_id"], "corpus_version": version,
+        "source_id": row["source_id"], "title": row["title"], "source_url": row["source_url"],
+        "issuer": row["issuer"], "instrument_number": row["instrument_number"],
+        "published_date": row["published_date"], "version": row["version"],
+        "effective_date": row["effective_date"], "provision_id": row["provision_id"],
+        "heading": row["heading"], "start": 0, "end": len(text), "quote": text,
+        "offset_unit": "Python Unicode code points; end is exclusive", "sha256": row["sha256"],
+    }
+    return expected if reference == expected else None

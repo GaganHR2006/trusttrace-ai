@@ -1,10 +1,11 @@
-# TRUSTTRACE AI — Phase 3
+# TRUSTTRACE AI — Phase 4
 
 Team Sentrix's local Chrome Extension Manifest V3 prototype and FastAPI backend.
 
 - Phase 1 observes request metadata only during a user-controlled audit and classifies hostnames.
 - Phase 2 discovers candidate privacy-policy URLs, lets the user choose one, then fetches and extracts its text through the local API.
 - Phase 3 retrieves source passages from a locally indexed set of official Indian DPDP instruments. It does not call an LLM, interpret legal obligations, or score risk.
+- Phase 4 adds a bounded backend evidence-analysis endpoint with deterministic, versioned review priorities. The extension UI is not connected to this endpoint yet.
 
 ## Requirements
 
@@ -111,7 +112,34 @@ npm test
 npm run test:python
 ```
 
-## 7. Build the local DPDP legal corpus
+## 7. Phase 4: evidence analysis API
+
+`POST http://127.0.0.1:8000/analysis/evidence` accepts a user-supplied evidence bundle and returns five category findings: third-party disclosure, tracking-related activity, data retention, deletion rights, and children's data. This endpoint performs no fetches, DNS lookups, or other outbound requests. It accepts at most 512 KB per JSON request, 500 observed hosts, 40 policy excerpts, and 10 legal references; individual text, URL, and metadata fields are bounded and unknown fields are rejected.
+
+The request contains:
+
+- `observation`: `page_origin`, `total_requests`, and a `domains` array of `{ "host", "party", "count" }` items. These are client-provided request metadata, not a server-attested browser log.
+- `policy`: `state` is one of `not_provided`, `fetch_failed`, `empty_extraction`, or `reviewed`. A reviewed policy includes its `source_url`, exact returned `text`, and the complete `excerpts` array from `/policy/extract`. Excerpts must cover that exact text without gaps or overlaps, and each `text[start:end]` slice must match exactly.
+- `legal_query` and `legal_references`: references must be citation objects returned for that exact query by `/legal/search`. The backend reruns this local query, rejects references when retrieval is insufficient or they are not among its results, then checks passage ID, corpus version, source URL, provision locator, metadata, PDF hash, quote, and offsets against the current index. Content-changing rebuilds change the corpus fingerprint and invalidate old citations; identical corpus content revalidates to the same fingerprint. The response reports `legal_evidence_status` as `not_supplied`, `sufficient_evidence`, `insufficient_evidence`, or `unavailable`. If the corpus is not initialized, it reports `corpus_status: "unavailable"`; no legal negative finding is inferred.
+
+Example request without policy or legal evidence:
+
+```powershell
+$body = @{
+  observation = @{ page_origin = "https://example.com"; total_requests = 0; domains = @() }
+  policy = @{ state = "not_provided"; source_url = $null; text = $null; excerpts = @() }
+  legal_references = @()
+} | ConvertTo-Json -Depth 8
+Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8000/analysis/evidence -ContentType "application/json" -Body $body | ConvertTo-Json -Depth 8
+```
+
+`trusttrace-phase4-review-v1` is a deterministic rule set. Finding `status` (available, conflicting, ambiguous, or insufficient evidence) is separate from `review_priority` (low, medium, high, or unassessed). Each finding returns its rule IDs, exact policy excerpts with source URLs and offsets, verified legal reference IDs, input evidence relied on, and rationale. The response includes the full server-verified legal citation objects and corpus fingerprint. Missing, failed, or empty policy inputs remain distinct from a reviewed policy with no matching category language. Absence of a matching statement is not treated as concealment or contradiction.
+
+Current rules use bounded keyword/phrase matching and assign **low** priority when a category-related policy excerpt is found for review. They assign **medium** priority when third-party request host metadata co-occurs with explicit restrictive sharing language, and label the finding **ambiguous**: the request's purpose and payload are unknown, so this is not a demonstrated contradiction. A hostname or count alone cannot create a sharing or tracking finding. Retention, deletion, and children's data use policy text, not unrelated host counts. Legal passages are linked only as lexical candidates and never determine legal applicability. **No current rule emits high priority** because these inputs cannot defensibly substantiate it; insufficient or unsupported cases are unassessed. Identical validated inputs produce the same output. These are evidence-review signals, not legal risk determinations, compliance assessments, or findings of violation. Phrase matching can produce false matches and is not semantic policy interpretation.
+
+The endpoint is not yet called by the popup; there are no extension UI or permission changes in Phase 4. Keep FastAPI bound to `127.0.0.1`. Phase 4 adds no dependencies.
+
+## 8. Build the local DPDP legal corpus
 
 With the virtual environment activated, run this explicit one-time/refresh command from the repository root:
 

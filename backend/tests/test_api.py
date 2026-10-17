@@ -1,9 +1,12 @@
 import unittest
+import json
 from unittest.mock import AsyncMock, patch
 
 from fastapi import HTTPException
 
-from backend.app.main import LegalSearchRequest, PolicyExtractRequest, app, extract_policy, health_check, legal_search, legal_sources
+from starlette.requests import Request
+
+from backend.app.main import LegalSearchRequest, PolicyExtractRequest, analyze_evidence, app, extract_policy, health_check, legal_search, legal_sources
 
 
 class PolicyEndpointTests(unittest.IsolatedAsyncioTestCase):
@@ -39,6 +42,32 @@ class PolicyEndpointTests(unittest.IsolatedAsyncioTestCase):
             with self.assertRaises(HTTPException) as caught:
                 legal_search(LegalSearchRequest(query="does the corpus have text?"))
         self.assertEqual(caught.exception.status_code, 503)
+
+    async def test_analysis_route_is_registered_and_returns_insufficient_status_without_policy(self):
+        self.assertIn("/analysis/evidence", app.openapi()["paths"])
+        payload = {
+            "observation": {"page_origin": "https://example.com", "total_requests": 0, "domains": []},
+            "policy": {"state": "not_provided", "source_url": None, "text": None, "excerpts": []},
+            "legal_references": [],
+        }
+        sent = False
+        async def receive():
+            nonlocal sent
+            if not sent:
+                sent = True
+                return {"type": "http.request", "body": json.dumps(payload).encode(), "more_body": False}
+            return {"type": "http.disconnect"}
+        request = Request({"type": "http", "method": "POST", "path": "/analysis/evidence", "headers": [(b"content-type", b"application/json")]}, receive)
+        with patch("backend.app.main.current_corpus_version", side_effect=FileNotFoundError):
+            response = await analyze_evidence(request)
+        self.assertEqual(response["corpus_status"], "unavailable")
+        self.assertTrue(all(item["review_priority"] == "unassessed" for item in response["findings"]))
+
+    async def test_analysis_rejects_non_json_content_type(self):
+        request = Request({"type": "http", "method": "POST", "path": "/analysis/evidence", "headers": []}, lambda: None)
+        with self.assertRaises(HTTPException) as caught:
+            await analyze_evidence(request)
+        self.assertEqual(caught.exception.status_code, 415)
 
 
 if __name__ == "__main__":
