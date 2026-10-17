@@ -1,0 +1,62 @@
+[
+  {
+    "source_id": "dpdp-act-2023",
+    "title": "The Digital Personal Data Protection Act, 2023",
+    "issuer": "Ministry of Law and Justice, Legislative Department; hosted by MeitY",
+    "instrument_number": "Act No. 22 of 2023",
+    "kind": "act",
+    "published_date": "2023-08-11",
+    "version": "Official Gazette text as enacted; use the separately indexed 2026 Removal of Difficulties Order for later changes",
+    "effective_date": "Provision-specific; see G.S.R. 843(E) (2025-11-13)",
+    "source_url": "https://www.meity.gov.in/static/uploads/2024/06/2bf1f0e9f04e6fb4f8fef35e82c42aa5.pdf",
+    "filename": "dpdp-act-2023.pdf"
+  },
+  {
+    "source_id": "dpdp-rules-2025",
+    "title": "Digital Personal Data Protection Rules, 2025",
+    "issuer": "Ministry of Electronics and Information Technology",
+    "instrument_number": "G.S.R. 846(E)",
+    "kind": "rules",
+    "published_date": "2025-11-13",
+    "version": "Final rules; read with G.S.R. 892(E) corrigendum dated 2025-12-10",
+    "effective_date": "Rule-specific commencement under rule 1, as corrected; see official corrigendum",
+    "source_url": "https://www.meity.gov.in/static/uploads/2025/11/53450e6e5dc0bfa85ebd78686cadad39.pdf",
+    "filename": "dpdp-rules-2025.pdf"
+  },
+  {
+    "source_id": "dpdp-commencement-2025-843e",
+    "title": "Notification appointing commencement dates under the DPDP Act, 2023",
+    "issuer": "Ministry of Electronics and Information Technology",
+    "instrument_number": "G.S.R. 843(E)",
+    "kind": "instrument",
+    "published_date": "2025-11-13",
+    "version": "Official Gazette notification",
+    "effective_date": "See notification paragraphs (a) to (c); different provisions have different dates",
+    "source_url": "https://egazette.gov.in/WriteReadData/2025/267647.pdf",
+    "filename": "dpdp-commencement-843e.pdf"
+  },
+  {
+    "source_id": "dpdp-rules-corrigendum-2025-892e",
+    "title": "Corrigendum to the Digital Personal Data Protection Rules, 2025",
+    "issuer": "Ministry of Electronics and Information Technology",
+    "instrument_number": "G.S.R. 892(E)",
+    "kind": "instrument",
+    "published_date": "2025-12-11",
+    "version": "Corrigendum dated 2025-12-10; Gazette issue No. 806",
+    "effective_date": "Not stated as a separate date in the source record",
+    "source_url": "https://egazette.gov.in/WriteReadData/2025/268455.pdf",
+    "filename": "dpdp-rules-corrigendum-892e.pdf"
+  },
+  {
+    "source_id": "dpdp-removal-difficulties-2026-5458e",
+    "title": "Digital Personal Data Protection (Removal of Difficulties) Order, 2026",
+    "issuer": "Ministry of Electronics and Information Technology",
+    "instrument_number": "S.O. 5458(E)",
+    "kind": "instrument",
+    "published_date": "2026-10-07",
+    "version": "Order dated 2026-10-05; Gazette issue CG-DL-E-07102026-276885",
+    "effective_date": "Date of publication in the Official Gazette, under paragraph 1(2)",
+    "source_url": "https://egazette.gov.in/WriteReadData/2026/276885.pdf",
+    "filename": "dpdp-removal-difficulties-5458e-2026.pdf"
+  }
+]

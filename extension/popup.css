@@ -1,0 +1,34 @@
+* { box-sizing: border-box; }
+body { margin: 0; width: 350px; min-height: 300px; background: #f7f5ff; color: #241744; font-family: Arial, Helvetica, sans-serif; }
+.app { padding: 20px; }
+header { margin-bottom: 18px; }
+.eyebrow { color: #7755b8; font-size: 10px; font-weight: 700; letter-spacing: 1.8px; }
+h1 { margin: 7px 0 2px; font-size: 23px; letter-spacing: -0.8px; }
+h1 span { color: #ee4da6; }
+.subtitle { margin: 0; color: #6f6682; font-size: 12px; }
+button { width: 100%; border: 0; border-radius: 9px; padding: 12px 14px; background: #4a2d83; color: white; font-size: 13px; font-weight: 700; cursor: pointer; }
+button:hover { background: #5b389b; }
+button:focus-visible { outline: 3px solid #ee4da6; outline-offset: 2px; }
+.result { margin-top: 14px; border: 1px solid #e5def5; border-radius: 10px; padding: 13px; background: white; }
+.label { margin-top: 3px; color: #827693; font-size: 9px; font-weight: 700; letter-spacing: 1px; }
+.value, .url { margin: 5px 0 12px; font-size: 12px; line-height: 1.45; overflow-wrap: anywhere; }
+.url { color: #5c4588; }
+.status { margin: 7px 0 0; color: #5b5368; font-size: 10px; line-height: 1.45; }
+footer { margin-top: 13px; color: #81788f; font-size: 9px; text-align: center; }
+.audit-controls { margin-top: 14px; border: 1px solid #e5def5; border-radius: 10px; padding: 13px; background: #fff; }
+.audit-controls h2 { margin: 0 0 7px; font-size: 14px; }
+.notice { margin: 0 0 10px; color: #655d72; font-size: 10px; line-height: 1.45; }
+.buttons { display: flex; gap: 8px; }
+.buttons button { flex: 1; padding: 9px 8px; }
+.buttons button:disabled { background: #aaa2b8; cursor: not-allowed; }
+.counts { display: flex; justify-content: space-between; margin: 8px 0; color: #655d72; font-size: 11px; }
+.domain-list { max-height: 130px; overflow-y: auto; margin: 0; padding: 0; list-style: none; }
+.domain-list li { display: flex; justify-content: space-between; gap: 8px; border-top: 1px solid #eee9f6; padding: 6px 0; color: #44345f; font-size: 10px; overflow-wrap: anywhere; }
+.domain-list li strong { flex: none; }
+.policy-controls { margin-top: 14px; border: 1px solid #e5def5; border-radius: 10px; padding: 13px; background: #fff; }
+.policy-controls h2 { margin: 0 0 7px; font-size: 14px; }
+.policy-controls button { margin-top: 8px; }
+.policy-controls select { width: 100%; margin-top: 6px; padding: 7px; border: 1px solid #d8cfea; border-radius: 6px; color: #241744; font-size: 10px; }
+.policy-controls select:disabled { color: #81788f; }
+.policy-controls #policy-text { max-height: 180px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; padding: 9px; border: 1px solid #eee9f6; border-radius: 6px; font: 10px/1.5 Arial, sans-serif; }
+.policy-controls #policy-source { display: block; font-size: 10px; overflow-wrap: anywhere; }

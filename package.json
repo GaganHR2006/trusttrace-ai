@@ -1,0 +1,17 @@
+{
+  "name": "trusttrace-ai-phase1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:extension": "node scripts/build-extension.mjs",
+    "test": "node --test",
+    "test:python": "python -m unittest discover -s backend/tests -v",
+    "test:all": "npm test && npm run test:python"
+  },
+  "dependencies": {
+    "tldts": "7.4.18"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  }
+}

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TRUSTTRACE AI</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <main class="app">
+    <header>
+      <div class="eyebrow">TEAM SENTRIX</div>
+      <h1>TRUSTTRACE <span>AI</span></h1>
+      <p class="subtitle">Privacy audit · Phase 2</p>
+    </header>
+    <button id="read-tab" type="button">Read active tab</button>
+    <section class="audit-controls" aria-label="Browser observation">
+      <h2>Browser observation</h2>
+      <p class="notice">While an audit runs, TRUSTTRACE AI watches request metadata from this tab. Starting asks for temporary HTTP/HTTPS site access; stopping releases it.</p>
+      <div class="buttons">
+        <button id="start-audit" type="button" disabled>Start audit</button>
+        <button id="stop-audit" type="button" disabled>Stop audit</button>
+      </div>
+      <p id="audit-status" class="status">No audit is running.</p>
+      <div class="counts"><span>Requests <strong id="request-count">0</strong></span><span>Domains <strong id="domain-count">0</strong></span></div>
+      <ul id="domain-list" class="domain-list" aria-label="Observed request domains"></ul>
+    </section>
+    <section class="policy-controls" aria-label="Privacy policy discovery">
+      <h2>Privacy policy</h2>
+      <p class="notice">Find candidates on this page. Review and select one before the local API fetches it.</p>
+      <button id="discover-policy" type="button">Find policy candidates</button>
+      <label class="label" for="policy-candidate">CANDIDATE URL</label>
+      <select id="policy-candidate" disabled aria-label="Select a policy candidate"></select>
+      <button id="fetch-policy" type="button" disabled>Fetch selected policy</button>
+      <p id="policy-status" class="status" aria-live="polite">No policy candidate selected.</p>
+      <div id="policy-result" hidden>
+        <div class="label">SOURCE URL</div>
+        <a id="policy-source" class="url" target="_blank" rel="noopener noreferrer"></a>
+        <div class="label">EXTRACTED TEXT</div>
+        <pre id="policy-text"></pre>
+        <p id="policy-truncated" class="status" hidden>Displayed text was truncated at the extraction limit.</p>
+      </div>
+    </section>
+    <section class="result" aria-live="polite">
+      <div class="label">PAGE TITLE</div>
+      <p id="page-title" class="value">Click the button to inspect this tab.</p>
+      <div class="label">URL</div>
+      <p id="page-url" class="url">—</p>
+      <p id="status" class="status">The active tab check reads its title and URL only.</p>
+    </section>
+    <footer>Local prototype · No bodies, cookies, or credentials stored</footer>
+  </main>
+  <script type="module" src="popup.js"></script>
+</body>
+</html>
